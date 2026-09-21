@@ -30,9 +30,11 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/*
-!/build/web/
+/build/
 /coverage/
+
+# Vercel build artifacts (built on server, not committed)
+/public/
 
 # Symbolication related
 app.*.symbols
@@ -44,3 +46,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Security — never commit secrets
+.env
+.env.*
+*.keystore
+*.jks
+*.p12
+*.pem
+firebase-*.json
+service-account*.json

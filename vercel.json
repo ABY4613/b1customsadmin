@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "outputDirectory": "public",
-  "cleanUrls": true,
+  "buildCommand": "chmod +x ./build.sh && ./build.sh",
+  "outputDirectory": "build/web",
+  "installCommand": "echo 'skip npm install'",
+  "framework": null,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!main\\.dart\\.js|flutter_bootstrap\\.js|flutter\\.js|flutter_service_worker\\.js|manifest\\.json|favicon\\.png|version\\.json|assets/.*|canvaskit/.*|icons/.*).*)",
       "destination": "/index.html"
     }
   ]
