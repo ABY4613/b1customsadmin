@@ -69,9 +69,19 @@ class ProductModel {
     };
   }
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) {
+  factory ProductModel.fromMap(Map<String, dynamic> json, [String? docId]) {
+    DateTime parseDate(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+      if (value.runtimeType.toString().contains('Timestamp')) {
+        return value.toDate();
+      }
+
+      return DateTime.now();
+    }
+
     return ProductModel(
-      id: json['id'] ?? '',
+      id: (docId != null && docId.isNotEmpty) ? docId : (json['id'] ?? ''),
       title: json['title'] ?? '',
       sku: json['sku'] ?? '',
       category: json['category'] ?? 'Exhaust',
@@ -79,12 +89,11 @@ class ProductModel {
       stock: (json['stock'] as num?)?.toInt() ?? 0,
       description: json['description'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
-          : DateTime.now(),
+      createdAt: parseDate(json['createdAt']),
+      updatedAt: parseDate(json['updatedAt']),
     );
   }
+
+  factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel.fromMap(json, json['id']);
 }
+

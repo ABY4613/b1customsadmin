@@ -29,17 +29,29 @@ class UserModel {
     };
   }
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
+  factory UserModel.fromMap(Map<String, dynamic> json, String docId) {
+    DateTime parseDate(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+      if (value.runtimeType.toString().contains('Timestamp')) {
+        return value.toDate();
+      }
+
+      return DateTime.now();
+    }
+
     return UserModel(
-      id: json['id'] ?? '',
+      id: docId.isNotEmpty ? docId : (json['id'] ?? ''),
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? 'Admin',
       token: json['token'] ?? '',
       avatarUrl: json['avatarUrl'],
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
+      createdAt: parseDate(json['createdAt']),
     );
   }
+
+  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel.fromMap(json, json['id'] ?? '');
 }
+
+

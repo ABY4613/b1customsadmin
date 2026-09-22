@@ -1,20 +1,63 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/order_model.dart';
-import '../services/mock_data_service.dart';
+import '../services/firebase_service.dart';
 import '../utils/app_constants.dart';
 
+
 class OrderController extends ChangeNotifier {
+  final FirebaseService _firebaseService = FirebaseService();
+  StreamSubscription<List<OrderModel>>? _ordersSubscription;
+
   List<OrderModel> _orders = [];
   String _selectedStatusFilter = 'All Statuses';
   String _searchQuery = '';
+  bool _isLoading = true;
+  String? _errorMessage;
 
   List<OrderModel> get orders => _orders;
   String get selectedStatusFilter => _selectedStatusFilter;
   String get searchQuery => _searchQuery;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
   OrderController() {
-    _orders = MockDataService.getInitialOrders();
+    _initOrders();
   }
+
+  Future<void> _initOrders() async {
+    _isLoading = true;
+    notifyListeners();
+
+    Timer? safetyTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (_isLoading) {
+        _isLoading = false;
+        notifyListeners();
+      }
+    });
+
+    try {
+      _ordersSubscription = _firebaseService.getOrdersStream().listen((orderList) {
+        safetyTimer?.cancel();
+        safetyTimer = null;
+        _orders = orderList;
+        _isLoading = false;
+        notifyListeners();
+      }, onError: (err) {
+        safetyTimer?.cancel();
+        safetyTimer = null;
+        _errorMessage = 'Failed to sync orders with Firebase.';
+        _isLoading = false;
+        notifyListeners();
+      });
+    } catch (e) {
+      safetyTimer?.cancel();
+      safetyTimer = null;
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
 
   List<OrderModel> get filteredOrders {
     return _orders.where((order) {
@@ -50,7 +93,7 @@ class OrderController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void acceptOrder(String orderId) {
+  Future<void> acceptOrder(String orderId) async {
     final index = _orders.indexWhere((o) => o.id == orderId);
     if (index != -1) {
       final now = DateTime.now();
@@ -61,15 +104,20 @@ class OrderController extends ChangeNotifier {
           timestamp: now,
         ));
 
-      _orders[index] = _orders[index].copyWith(
+      final updated = _orders[index].copyWith(
         status: AppConstants.orderStatusAccepted,
         trackingLogs: logs,
       );
-      notifyListeners();
+      try {
+        await _firebaseService.updateOrder(updated);
+      } catch (e) {
+        _errorMessage = 'Failed to accept order in Firebase.';
+        notifyListeners();
+      }
     }
   }
 
-  void rejectOrder(String orderId, String reason) {
+  Future<void> rejectOrder(String orderId, String reason) async {
     final index = _orders.indexWhere((o) => o.id == orderId);
     if (index != -1) {
       final now = DateTime.now();
@@ -80,16 +128,21 @@ class OrderController extends ChangeNotifier {
           timestamp: now,
         ));
 
-      _orders[index] = _orders[index].copyWith(
+      final updated = _orders[index].copyWith(
         status: AppConstants.orderStatusRejected,
         rejectionReason: reason,
         trackingLogs: logs,
       );
-      notifyListeners();
+      try {
+        await _firebaseService.updateOrder(updated);
+      } catch (e) {
+        _errorMessage = 'Failed to reject order in Firebase.';
+        notifyListeners();
+      }
     }
   }
 
-  void dispatchOrder(String orderId, String courierPartner, String trackingId) {
+  Future<void> dispatchOrder(String orderId, String courierPartner, String trackingId) async {
     final index = _orders.indexWhere((o) => o.id == orderId);
     if (index != -1) {
       final now = DateTime.now();
@@ -100,17 +153,22 @@ class OrderController extends ChangeNotifier {
           timestamp: now,
         ));
 
-      _orders[index] = _orders[index].copyWith(
+      final updated = _orders[index].copyWith(
         status: AppConstants.orderStatusDispatched,
         courierPartner: courierPartner,
         trackingId: trackingId,
         trackingLogs: logs,
       );
-      notifyListeners();
+      try {
+        await _firebaseService.updateOrder(updated);
+      } catch (e) {
+        _errorMessage = 'Failed to dispatch order in Firebase.';
+        notifyListeners();
+      }
     }
   }
 
-  void markDelivered(String orderId) {
+  Future<void> markDelivered(String orderId) async {
     final index = _orders.indexWhere((o) => o.id == orderId);
     if (index != -1) {
       final now = DateTime.now();
@@ -121,11 +179,40 @@ class OrderController extends ChangeNotifier {
           timestamp: now,
         ));
 
-      _orders[index] = _orders[index].copyWith(
+      final updated = _orders[index].copyWith(
         status: AppConstants.orderStatusDelivered,
         trackingLogs: logs,
       );
+      try {
+        await _firebaseService.updateOrder(updated);
+      } catch (e) {
+        _errorMessage = 'Failed to mark order delivered in Firebase.';
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> addOrder(OrderModel order) async {
+    try {
+      await _firebaseService.addOrder(order);
+    } catch (e) {
+      _errorMessage = 'Failed to create order in Firebase.';
       notifyListeners();
     }
+  }
+
+  Future<void> deleteOrder(String orderId) async {
+    try {
+      await _firebaseService.deleteOrder(orderId);
+    } catch (e) {
+      _errorMessage = 'Failed to delete order from Firebase.';
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ordersSubscription?.cancel();
+    super.dispose();
   }
 }

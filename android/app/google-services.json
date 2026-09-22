@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "755700070382",
+    "project_id": "rosesheild-adc0f",
+    "storage_bucket": "rosesheild-adc0f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:755700070382:android:34366813fc733b5a3ac0ff",
+        "android_client_info": {
+          "package_name": "com.example.b1customsadmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDH9lFM8sdB9nXUxy88TDVf2g-3DxyrMA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:755700070382:android:7690734cadebe1bb3ac0ff",
+        "android_client_info": {
+          "package_name": "com.example.roseshield_chat_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDH9lFM8sdB9nXUxy88TDVf2g-3DxyrMA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

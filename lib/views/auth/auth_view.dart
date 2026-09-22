@@ -21,8 +21,9 @@ class _AuthViewState extends State<AuthView> {
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController(text: 'admin@b1customs.com');
-  final _passwordController = TextEditingController(text: 'admin123');
+  final _emailController = TextEditingController(text: 'aadhi@gmail.com');
+  final _passwordController = TextEditingController(text: 'Password@123');
+
 
   @override
   void dispose() {

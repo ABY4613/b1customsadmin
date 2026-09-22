@@ -50,6 +50,32 @@ class TrackingLogEntry {
     required this.description,
     required this.timestamp,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'description': description,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
+
+  factory TrackingLogEntry.fromMap(Map<String, dynamic> json) {
+    DateTime parseDate(dynamic val) {
+      if (val == null) return DateTime.now();
+      if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
+      if (val.runtimeType.toString().contains('Timestamp')) {
+        return val.toDate();
+      }
+
+      return DateTime.now();
+    }
+
+    return TrackingLogEntry(
+      status: json['status'] ?? '',
+      description: json['description'] ?? '',
+      timestamp: parseDate(json['timestamp']),
+    );
+  }
 }
 
 class OrderModel {
@@ -85,6 +111,59 @@ class OrderModel {
     List<TrackingLogEntry>? trackingLogs,
   }) : trackingLogs = trackingLogs ?? [];
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'orderNumber': orderNumber,
+      'customerName': customerName,
+      'customerEmail': customerEmail,
+      'customerPhone': customerPhone,
+      'shippingAddress': shippingAddress,
+      'items': items.map((i) => i.toJson()).toList(),
+      'totalAmount': totalAmount,
+      'status': status,
+      'createdAt': createdAt.toIso8601String(),
+      'rejectionReason': rejectionReason,
+      'courierPartner': courierPartner,
+      'trackingId': trackingId,
+      'trackingLogs': trackingLogs.map((l) => l.toJson()).toList(),
+    };
+  }
+
+  factory OrderModel.fromMap(Map<String, dynamic> json, [String? docId]) {
+    DateTime parseDate(dynamic val) {
+      if (val == null) return DateTime.now();
+      if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
+      if (val.runtimeType.toString().contains('Timestamp')) {
+        return val.toDate();
+      }
+
+      return DateTime.now();
+    }
+
+    final itemsRaw = json['items'] as List<dynamic>? ?? [];
+    final logsRaw = json['trackingLogs'] as List<dynamic>? ?? [];
+
+    return OrderModel(
+      id: (docId != null && docId.isNotEmpty) ? docId : (json['id'] ?? ''),
+      orderNumber: json['orderNumber'] ?? '',
+      customerName: json['customerName'] ?? '',
+      customerEmail: json['customerEmail'] ?? '',
+      customerPhone: json['customerPhone'] ?? '',
+      shippingAddress: json['shippingAddress'] ?? '',
+      items: itemsRaw.map((i) => OrderItemModel.fromJson(Map<String, dynamic>.from(i))).toList(),
+      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      status: json['status'] ?? 'Pending',
+      createdAt: parseDate(json['createdAt']),
+      rejectionReason: json['rejectionReason'],
+      courierPartner: json['courierPartner'],
+      trackingId: json['trackingId'],
+      trackingLogs: logsRaw.map((l) => TrackingLogEntry.fromMap(Map<String, dynamic>.from(l))).toList(),
+    );
+  }
+
+  factory OrderModel.fromJson(Map<String, dynamic> json) => OrderModel.fromMap(json, json['id']);
+
   OrderModel copyWith({
     String? id,
     String? orderNumber,
@@ -119,3 +198,4 @@ class OrderModel {
     );
   }
 }
+

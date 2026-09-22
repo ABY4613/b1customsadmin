@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/order_model.dart';
 import '../utils/app_colors.dart';
 import '../utils/formatters.dart';
+import 'app_image.dart';
 import 'status_badge.dart';
 
 class OrderDetailModal extends StatelessWidget {
@@ -185,20 +186,12 @@ class OrderDetailModal extends StatelessWidget {
                               padding: const EdgeInsets.all(12),
                               child: Row(
                                 children: [
-                                  ClipRRect(
+                                  AppImage(
+                                    imageUrl: item.imageUrl,
+                                    width: 48,
+                                    height: 48,
                                     borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      item.imageUrl,
-                                      width: 48,
-                                      height: 48,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                        width: 48,
-                                        height: 48,
-                                        color: AppColors.border,
-                                        child: const Icon(Icons.two_wheeler, color: AppColors.accentGrey),
-                                      ),
-                                    ),
+                                    fallbackIcon: Icons.two_wheeler,
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(

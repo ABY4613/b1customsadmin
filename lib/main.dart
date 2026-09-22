@@ -1,16 +1,26 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/dashboard_controller.dart';
 import 'controllers/inventory_controller.dart';
 import 'controllers/navigation_controller.dart';
 import 'controllers/order_controller.dart';
+import 'firebase_options.dart';
+import 'utils/app_colors.dart';
 import 'utils/app_constants.dart';
 import 'utils/app_theme.dart';
 import 'views/auth/auth_view.dart';
 import 'views/main_layout.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
   runApp(const B1CustomsAdminApp());
 }
 
@@ -60,6 +70,25 @@ class _B1CustomsAdminAppState extends State<B1CustomsAdminApp> {
       home: ListenableBuilder(
         listenable: _authController,
         builder: (context, _) {
+          if (_authController.isInitialLoading) {
+            return const Scaffold(
+              backgroundColor: AppColors.background,
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: AppColors.primary),
+                    SizedBox(height: 16),
+                    Text(
+                      'Connecting to B1 Customs Firebase Services...',
+                      style: TextStyle(color: AppColors.accentGrey, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (!_authController.isAuthenticated) {
             return AuthView(authController: _authController);
           }
